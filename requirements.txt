@@ -12,3 +12,4 @@ pydantic>=2.8
 python-dotenv>=1.0
 user-agents>=2.2
 uvicorn[standard]>=0.30
+gunicorn
