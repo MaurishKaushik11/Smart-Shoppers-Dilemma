@@ -4,7 +4,7 @@ import aiohttp
 
 from .cache import cache
 from .schemas import SearchResponse, ProductCard
-from .google_shopping_playwright import fetch_google_shopping_playwright as fetch_google_shopping
+from .google_shopping import fetch_google_shopping
 
 
 async def aggregate_products(query: str, ttl_seconds: int = 300) -> SearchResponse:
@@ -23,11 +23,12 @@ async def aggregate_products(query: str, ttl_seconds: int = 300) -> SearchRespon
             return cached2
 
         # Run multiple sources in parallel; currently only Google, but easy to extend
-        tasks = [
-            fetch_google_shopping(query),
-            # add more providers here
-        ]
-        results_lists: List[List[ProductCard]] = await asyncio.gather(*tasks, return_exceptions=False)
+        async with aiohttp.ClientSession() as session:
+            tasks = [
+                fetch_google_shopping(query, session),
+                # add more providers here
+            ]
+            results_lists: List[List[ProductCard]] = await asyncio.gather(*tasks, return_exceptions=False)
 
         flat: List[ProductCard] = []
         sources_used: List[str] = []
